@@ -1,0 +1,6 @@
+{
+  "name": "Taxonomy Builder",
+  "description": "A powerful internal tool for building data schemas, taxonomies, vocabularies, and entity models with a Gemini-powered AI Copilot.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

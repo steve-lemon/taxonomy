@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-bg-base: var(--bg-base);
+  --color-surface-base: var(--surface-base);
+  --color-surface-light: var(--surface-light);
+  --color-accent: var(--accent);
+  --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
+  --color-border-subtle: var(--border-subtle);
+  --font-serif: 'Georgia', serif;
+  --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+}
+
+:root, .light {
+  --bg-base: #f9fafb;
+  --surface-base: #ffffff;
+  --surface-light: #f3f4f6;
+  --accent: #ea580c;
+  --ink: #111827;
+  --ink-dim: #6b7280;
+  --border-subtle: #d1d5db;
+}
+
+.dark {
+  --bg-base: #050505;
+  --surface-base: #111111;
+  --surface-light: #1a1a1a;
+  --accent: #F27D26;
+  --ink: #E5E7EB;
+  --ink-dim: rgba(229,231,235,0.6);
+  --border-subtle: rgba(255,255,255,0.1);
+}
+
+body {
+  background-color: var(--color-bg-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
