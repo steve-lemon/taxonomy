@@ -2,9 +2,11 @@ import React, { useState, useCallback, useRef } from 'react';
 import { Upload, Image as ImageIcon, Loader2, X, Tag, Link2, Box } from 'lucide-react';
 import { useTaxonomyStore } from '../store/useTaxonomyStore';
 import { classifyImage, ClassificationResult } from '../services/aiService';
+import { useTranslation } from 'react-i18next';
 
 export function TestClassification() {
   const { data } = useTaxonomyStore();
+  const { t } = useTranslation();
   const [image, setImage] = useState<string | null>(null);
   const [isClassifying, setIsClassifying] = useState(false);
   const [result, setResult] = useState<ClassificationResult | null>(null);
@@ -53,7 +55,7 @@ export function TestClassification() {
   return (
     <div className="border border-border-subtle rounded-xl overflow-hidden bg-surface-base flex flex-col xl:flex-row mt-8" onPaste={handlePaste}>
       <div className="w-full xl:w-1/3 p-5 border-b xl:border-b-0 xl:border-r border-border-subtle flex flex-col">
-        <h2 className="text-sm uppercase tracking-[1px] font-semibold text-ink mb-4">Auto Classification</h2>
+        <h2 className="text-sm uppercase tracking-[1px] font-semibold text-ink mb-4">{t('auto_classification.title')}</h2>
         
         {!image ? (
           <div 

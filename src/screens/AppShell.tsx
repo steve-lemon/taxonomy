@@ -4,10 +4,11 @@ import { useTaxonomyStore } from '../store/useTaxonomyStore';
 import { Button } from '../components/ui/Button';
 import { validateTaxonomy } from '../utils/validation';
 import { validateWithLines, IssueWithLine } from '../utils/jsonSourceMap';
-import { Layers, ListTree, Tags, Hash, Settings as SettingsIcon, FolderOpen, Save, FileJson, AlertCircle, Moon, Sun, ArrowLeftRight, Undo2, Redo2, Edit2, Menu, X, ExternalLink } from 'lucide-react';
+import { Layers, ListTree, Tags, Hash, Settings as SettingsIcon, FolderOpen, Save, FileJson, AlertCircle, Moon, Sun, ArrowLeftRight, Undo2, Redo2, Edit2, Menu, X, ExternalLink, Globe } from 'lucide-react';
 import { ConfirmDeleteModal } from '../components/ui/ConfirmDeleteModal';
 import { BundleSettingsModal } from '../components/ui/BundleSettingsModal';
 import { CopilotChat } from '../components/CopilotChat';
+import { useTranslation } from 'react-i18next';
 
 export function AppShell() {
   const { data, selectedBundleKey, isDirty, loading, saveData, clearSelection, theme, setTheme, undo, redo, canUndo, canRedo } = useTaxonomyStore();
@@ -17,6 +18,14 @@ export function AppShell() {
   const [bundleSettingsOpen, setBundleSettingsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [errorPanelOpen, setErrorPanelOpen] = useState(false);
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'ko' : 'en';
+    i18n.changeLanguage(newLang);
+    localStorage.setItem('app_language', newLang);
+  };
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,13 +63,13 @@ export function AppShell() {
   };
   
   const navItems = [
-    { to: '/', label: 'Overview', icon: <Layers className="w-4 h-4" /> },
-    { to: '/vocabularies', label: 'Vocabularies', icon: <ListTree className="w-4 h-4" /> },
-    { to: '/attributes', label: 'Attributes', icon: <Tags className="w-4 h-4" /> },
-    { to: '/categories', label: 'Categories', icon: <FolderOpen className="w-4 h-4" /> },
-    { to: '/entities', label: 'Entity Model', icon: <Hash className="w-4 h-4" /> },
-    { to: '/rules', label: 'Rules & Norm.', icon: <SettingsIcon className="w-4 h-4" /> },
-    { to: '/raw', label: 'Raw Editor', icon: <FileJson className="w-4 h-4" /> },
+    { to: '/', label: t('app.sidebar.overview'), icon: <Layers className="w-4 h-4" /> },
+    { to: '/vocabularies', label: t('app.sidebar.vocabularies'), icon: <ListTree className="w-4 h-4" /> },
+    { to: '/attributes', label: t('app.sidebar.attributes'), icon: <Tags className="w-4 h-4" /> },
+    { to: '/categories', label: t('app.sidebar.categories'), icon: <FolderOpen className="w-4 h-4" /> },
+    { to: '/entities', label: t('app.sidebar.entities'), icon: <Hash className="w-4 h-4" /> },
+    { to: '/rules', label: t('app.sidebar.rules'), icon: <SettingsIcon className="w-4 h-4" /> },
+    { to: '/raw', label: t('app.sidebar.raw'), icon: <FileJson className="w-4 h-4" /> },
   ];
 
   return (
@@ -93,6 +102,14 @@ export function AppShell() {
         
         <div className="flex items-center space-x-2 sm:space-x-4 shrink-0 overflow-x-auto ml-auto px-1 sm:px-0">
           <button 
+            onClick={toggleLanguage}
+            className="text-ink-dim hover:text-ink p-1.5 rounded-full transition-colors flex items-center justify-center shrink-0 uppercase text-[10px] sm:text-[11px] font-bold"
+            title="Toggle Language"
+          >
+            <Globe className="w-4 h-4 mr-1" />
+            {i18n.language === 'en' ? 'EN' : 'KO'}
+          </button>
+          <button 
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="text-ink-dim hover:text-ink p-1.5 rounded-full transition-colors flex items-center justify-center sm:mr-2 shrink-0"
             title="Toggle Theme"
@@ -108,7 +125,7 @@ export function AppShell() {
           {validErrors === 0 && (
             <div className="flex items-center text-ink text-[10px] sm:text-[11px] uppercase tracking-wider shrink-0">
               <div className="w-2 h-2 rounded-full bg-emerald-500 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">No Errors</span>
+              <span className="hidden sm:inline">{t('app.header.no_errors')}</span>
             </div>
           )}
           
@@ -131,7 +148,7 @@ export function AppShell() {
             </button>
           </div>
           <Button variant="outline" size="sm" onClick={() => setDiscardConfirmOpen(true)} disabled={!isDirty} className="shrink-0 hidden sm:flex">
-            Discard
+            {t('app.header.discard')}
           </Button>
           <Button 
             variant="default" 
@@ -140,7 +157,7 @@ export function AppShell() {
             onClick={saveData}
             className="shrink-0 text-xs px-2 sm:px-3"
           >
-            Save
+            {t('app.header.save')}
           </Button>
         </div>
       </header>
