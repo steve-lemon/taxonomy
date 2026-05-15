@@ -1,3 +1,5 @@
+![screen shot of overview; show example result of making labels](image.png)
+
 # Taxonomy & Schema Builder
 
 A powerful and intuitive web-based tool for designing, managing, and validating data schemas and taxonomy trees.
