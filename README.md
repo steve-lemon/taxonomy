@@ -6,11 +6,11 @@ A powerful and intuitive web-based tool for designing, managing, and validating 
 
 ## Features
 
-- **Categories**: Build a hierarchical taxonomy of product and conceptual categories. 
+- **Categories**: Build a hierarchical taxonomy of product and conceptual categories.
 - **Attributes**: Define properties that describe categories (e.g., Color, Size, Brand), supporting different data types (enum, boolean, date, string) and cardinality for multi-value inputs.
 - **Vocabularies**: Centralized dictionaries managing enum values to enforce naming consistency. Also features built-in color swatch support for color values.
 - **Entities**: Define objects and relationships using visual data-model configurations.
-- **Rules & Validation**: Live schema validation across terminology, alias collisions, duplicate assignments, and orphan references. Warns of alias overlap and structural logic issues instantly. 
+- **Rules & Validation**: Live schema validation across terminology, alias collisions, duplicate assignments, and orphan references. Warns of alias overlap and structural logic issues instantly.
 - **Entity Preview**: Interactive form builder testing environment integrated directly alongside your schemas.
 - **AI Copilot**: Integrate with Gemini via `@google/genai` to automatically suggest or build entire taxonomies, schemas, attributes, and terms based on prompts.
 
@@ -31,6 +31,7 @@ For rules on when to use entities, relation types, and what role they play, plea
 ## Aliases & Overrides
 
 This editor supports intelligent 'Aliases' and 'Override Allowed Terms'.
+
 - **Aliases**: You can declare variations for a Category, Attribute, Entity, or Term (e.g. `shirt`, `t-shirt`). A built-in validation system prevents and warns of overlap across schemas.
 - **Allow Term Overrides**: Define tight constraints on wide Vocabularies specific to different categories.
 
@@ -39,3 +40,9 @@ This editor supports intelligent 'Aliases' and 'Override Allowed Terms'.
 1. `npm install`
 2. `npm run dev`
 3. View at the provided local port (`3000`).
+
+## Run and deploy your AI Studio app
+
+This contains everything you need to run your app locally.
+
+View your app in AI Studio: <https://ai.studio/apps/173e0b02-9d4e-48e0-9d18-a4f83768672c>
