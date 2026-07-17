@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle2, ChevronRight, Info, ChevronDown, ChevronUp }
 import { Link } from 'react-router-dom';
 import { TestClassification } from '../components/TestClassification';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function OverviewScreen() {
   const { data } = useTaxonomyStore();
@@ -17,6 +17,10 @@ export function OverviewScreen() {
   const warnings = issues.filter(i => i.level === 'WARNING');
 
   const [validationOpen, setValidationOpen] = useState(issues.length > 0);
+
+  useEffect(() => {
+    setValidationOpen(issues.length > 0);
+  }, [issues.length]);
 
   const stats = [
     { label: t('overview.stats.vocabularies'), count: data.vocabularies.length, link: '/vocabularies' },

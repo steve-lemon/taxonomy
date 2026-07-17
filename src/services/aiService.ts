@@ -185,7 +185,8 @@ export async function generateTaxonomyFromAi(
   purpose: string,
   base64Images: string[],
   model: GenerativeModelType,
-  language: string = 'English'
+  language: string = 'English',
+  attachedDocs: {name: string, content: string}[] = []
 ): Promise<TaxonomyFile> {
   const apiKey = getGeminiApiKey();
   if (!apiKey) {
@@ -194,10 +195,17 @@ export async function generateTaxonomyFromAi(
 
   const ai = new GoogleGenAI({ apiKey });
 
-  
+  let finalPurpose = purpose;
+  if (!finalPurpose.trim() && attachedDocs.length > 0) {
+    finalPurpose = "Please generate a taxonomy based on the attached document(s).";
+  }
+  if (attachedDocs.length > 0) {
+    finalPurpose += '\n\n' + attachedDocs.map(doc => `--- ${doc.name} ---\n${doc.content}`).join('\n\n');
+  }
+
    const prompt = `
 You are an expert, meticulous data architect and taxonomy designer. Your goal is to design a robust, well-structured taxonomy bundle for the following domain/purpose:
-"${purpose}"
+"${finalPurpose}"
 ${language ? `\nMake sure the primary language of the taxonomy (labels, terms, descriptions, names) is: ${language}.` : ""}
 ${base64Images.length > 0 ? "\nThe user has provided reference images representing the domain. Analyze them to extract relevant categories, attributes, and terms." : ""}
 
@@ -238,14 +246,12 @@ Design a comprehensive taxonomy and output it strictly in the requested JSON for
 Ensure logical consistency. If a category binds an attribute, that attribute must exist in the 'attributes' array. If an attribute uses a 'vocab_ref', that vocabulary must exist in the 'vocabularies' array.
 `;
 
-  const contents = [];
+  const parts: any[] = [];
   
-  // Add images to contents if any
   for (const img of base64Images) {
-    // img is expected to be a data URL like: data:image/png;base64,iVBORw0KGgo...
     const match = img.match(/^data:([^;]+);base64,(.+)$/);
     if (match) {
-      contents.push({
+      parts.push({
         inlineData: {
           mimeType: match[1],
           data: match[2]
@@ -254,11 +260,11 @@ Ensure logical consistency. If a category binds an attribute, that attribute mus
     }
   }
 
-  contents.push(prompt);
+  parts.push({ text: prompt });
 
   const response = await ai.models.generateContent({
     model: model,
-    contents: contents,
+    contents: { parts },
     config: {
       responseMimeType: "application/json",
       responseSchema: TAXONOMY_SCHEMA as any,

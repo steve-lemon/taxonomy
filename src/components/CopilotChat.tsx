@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bot, X, Send, Loader2, Check, Settings2, ImagePlus, User, Trash2 } from 'lucide-react';
+import { Bot, X, Send, Loader2, Check, Settings2, ImagePlus, User, Trash2, FileText } from 'lucide-react';
 import { useTaxonomyStore } from '../store/useTaxonomyStore';
 import { analyzeAndModifyTaxonomy, GenerativeModelType, ChatMessage } from '../services/aiService';
 import { TaxonomyFile } from '../types/taxonomy';
@@ -21,18 +21,18 @@ export function CopilotChat() {
     return [];
   });
   const [attachedImages, setAttachedImages] = useState<string[]>([]);
+  const [attachedDocs, setAttachedDocs] = useState<{name: string, content: string}[]>([]);
 
   // Update localStorage when history changes
   React.useEffect(() => {
     localStorage.setItem('copilot_history', JSON.stringify(chatHistory));
   }, [chatHistory]);
-
   
   const { data, updateData } = useTaxonomyStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim() || !data || loading) return;
+    if ((!query.trim() && attachedDocs.length === 0) || !data || loading) return;
 
     setLoading(true);
     setError(null);
@@ -40,10 +40,17 @@ export function CopilotChat() {
     setProposedTaxonomy(null);
     
     try {
-      const response = await analyzeAndModifyTaxonomy(data, query, selectedModel, attachedImages, chatHistory);
+      let finalQuery = query;
+      if (!finalQuery.trim() && attachedDocs.length > 0) {
+        finalQuery = "Please generate or update the schema based on the attached document(s).";
+      }
+      if (attachedDocs.length > 0) {
+        finalQuery += '\n\n' + attachedDocs.map(doc => `--- ${doc.name} ---\n${doc.content}`).join('\n\n');
+      }
+      
+      const response = await analyzeAndModifyTaxonomy(data, finalQuery, selectedModel, attachedImages, chatHistory);
       setProposedPlan(response.plan);
       setProposedTaxonomy(response.new_taxonomy);
-      // We don't add to chatHistory until approved, or we can add right away
     } catch (err: any) {
       setError(err.message || 'An error occurred while analyzing the request.');
     } finally {
@@ -57,14 +64,17 @@ export function CopilotChat() {
         Object.assign(draft, proposedTaxonomy);
       });
       
-      // Update history with the user's intent and AI's plan if available
+      let finalQuery = query;
+      if (attachedDocs.length > 0) {
+        finalQuery += ` [Attached ${attachedDocs.length} Docs]`;
+      }
+      
       setChatHistory(prev => {
         const newHistory: ChatMessage[] = [
           ...prev,
-          { role: 'user', text: query + (attachedImages.length > 0 ? ' [Attached Images]' : '') },
+          { role: 'user', text: finalQuery + (attachedImages.length > 0 ? ' [Attached Images]' : '') },
           { role: 'model', text: proposedPlan || 'Applied changes as requested.' }
         ];
-        // keep only last 5
         return newHistory.slice(-5);
       });
 
@@ -72,6 +82,7 @@ export function CopilotChat() {
       setProposedTaxonomy(null);
       setQuery('');
       setAttachedImages([]);
+      setAttachedDocs([]);
     }
   };
 
@@ -182,20 +193,39 @@ export function CopilotChat() {
           </div>
 
           
-          {attachedImages.length > 0 && (
-            <div className="px-3 pt-3 flex gap-2 overflow-x-auto bg-surface-base border-t border-border-subtle">
-              {attachedImages.map((img, idx) => (
-                 <div key={idx} className="relative w-16 h-16 shrink-0 border border-border-subtle rounded-md overflow-hidden bg-surface-light">
-                   <img src={img} alt="attachment" className="w-full h-full object-cover" />
-                   <button type="button" onClick={() => setAttachedImages(prev => prev.filter((_, i) => i !== idx))} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-red-500">
-                     <X className="w-3 h-3" />
-                   </button>
-                 </div>
-              ))}
+          {(attachedImages.length > 0 || attachedDocs.length > 0) && (
+            <div className="px-3 pt-3 flex flex-col gap-2 overflow-x-auto bg-surface-base border-t border-border-subtle">
+              {attachedImages.length > 0 && (
+                <div className="flex gap-2">
+                  {attachedImages.map((img, idx) => (
+                    <div key={idx} className="relative w-16 h-16 shrink-0 border border-border-subtle rounded-md overflow-hidden bg-surface-light">
+                      <img src={img} alt="attachment" className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => setAttachedImages(prev => prev.filter((_, i) => i !== idx))} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-red-500">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {attachedDocs.length > 0 && (
+                <div className="flex flex-col gap-1 pb-1">
+                  {attachedDocs.map((doc, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-surface-light border border-border-subtle rounded px-2 py-1 text-[12px]">
+                      <div className="flex items-center gap-1.5 overflow-hidden">
+                        <FileText className="w-3.5 h-3.5 text-ink-dim shrink-0" />
+                        <span className="truncate text-ink">{doc.name}</span>
+                      </div>
+                      <button type="button" onClick={() => setAttachedDocs(prev => prev.filter((_, i) => i !== idx))} className="text-ink-dim hover:text-red-500 ml-2 shrink-0">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           <form onSubmit={handleSubmit} className="p-3 border-t border-border-subtle bg-surface-base flex items-center gap-2">
-            <label className="cursor-pointer text-ink-dim hover:text-accent disabled:opacity-50 flex items-center shrink-0">
+            <label className="cursor-pointer text-ink-dim hover:text-accent disabled:opacity-50 flex items-center shrink-0" title="Attach Image">
                <ImagePlus className="w-5 h-5" />
                <input 
                  type="file" 
@@ -219,7 +249,31 @@ export function CopilotChat() {
                  }} 
                />
             </label>
-            <div className="flex-1 border border-border-subtle rounded-md bg-bg-base overflow-hidden flex items-center">
+            <label className="cursor-pointer text-ink-dim hover:text-accent disabled:opacity-50 flex items-center shrink-0" title="Attach Document (.md, .txt)">
+               <FileText className="w-4 h-4 ml-0.5" />
+               <input 
+                 type="file" 
+                 accept=".md,.txt"
+                 multiple
+                 className="hidden" 
+                 disabled={loading || !!proposedPlan}
+                 onChange={(e) => {
+                   if (!e.target.files) return;
+                   const files = Array.from(e.target.files) as File[];
+                   files.forEach(file => {
+                     const reader = new FileReader();
+                     reader.onload = (event) => {
+                       if (typeof event.target?.result === 'string') {
+                         setAttachedDocs(prev => [...prev, { name: file.name, content: event.target!.result as string }]);
+                       }
+                     };
+                     reader.readAsText(file);
+                   });
+                   e.target.value = '';
+                 }} 
+               />
+            </label>
+            <div className="flex-1 border border-border-subtle rounded-md bg-bg-base overflow-hidden flex items-center ml-1">
               <input
                 type="text"
                 value={query}
@@ -232,7 +286,7 @@ export function CopilotChat() {
             
             <button
               type="submit"
-              disabled={loading || !query.trim() || !!proposedPlan}
+              disabled={loading || (!query.trim() && attachedDocs.length === 0) || !!proposedPlan}
               className="w-10 h-10 flex flex-shrink-0 items-center justify-center bg-accent text-white rounded-md disabled:opacity-50 hover:bg-accent/90 transition-colors"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
